@@ -17,6 +17,28 @@ pip install -r requirements.txt
 
 Then put `bin/` on PATH (Windows uses `bin/workloop.cmd`, macOS and Linux use `bin/workloop`) and run `workloop`. The first run asks for your name, which the agents use in their briefs.
 
+### Setting up a new machine, step by step
+
+1. Check the prerequisites: `python --version` (3.8+), `git --version`, `claude --version` (installed and signed in).
+2. Get the code: `git clone <this repo's URL>`, or download the ZIP from the repo page if git should not be signed in on the machine.
+3. From the repo folder: `pip install -r requirements.txt`.
+4. Add the repo's `bin` folder to PATH. To try it without changing PATH, run `python bin/workloop` (Windows: `python bin\workloop`).
+5. Run `workloop` and give your name.
+6. Press `n` to create the first project: a name, a one-line goal and a home folder (the folder you work from; leave it blank for pure discussion or investigation work). Say yes to adding the first seat.
+
+To check the install without starting Claude, set `WORKLOOP_DRYRUN=1` first: workloop then prints the Claude command it would run.
+
+### Contributing changes back
+
+Before the first commit on a machine, set the git identity for this repo so no personal email lands in the history. GitHub lists your no-reply address under Settings → Emails ("Keep my email addresses private"):
+
+```
+git config user.name "<your GitHub username>"
+git config user.email "<id>+<username>@users.noreply.github.com"
+```
+
+Projects, seats and notes live in the data folder (below), never in the repo, so nothing personal is committed by using workloop.
+
 ## Where things live
 
 The repo holds code only. Everything personal is in the data folder, `~/.workloop` by default (set `WORKLOOP_HOME` to move it):
