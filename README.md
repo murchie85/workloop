@@ -113,3 +113,7 @@ workloop/prompts/     stage prompts for architected projects
 ```
 
 `WORKLOOP_DRYRUN=1` prints the Claude command instead of running it.
+
+## Licence
+
+MIT. See [LICENSE](LICENSE).
