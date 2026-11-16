@@ -5,12 +5,34 @@ workloop reg ...    change the project registry  (workloop reg -h)
 workloop hook       called by Claude Code hooks; reads the hook JSON on stdin"""
 import os, sys
 
-sys.path.insert(0, os.path.join(os.path.dirname(os.path.realpath(__file__)), ".."))
+HERE = os.path.dirname(os.path.realpath(__file__))
+ROOT = os.path.dirname(HERE)
+
+# Use the repo's own virtual environment when there is one, whichever Python started us.
+# This is what makes a PEP 668 "externally managed" system Python (Homebrew, Debian) work.
+_venv = os.path.join(ROOT, ".venv")
+_py = os.path.join(_venv, "Scripts", "python.exe") if os.name == "nt" else os.path.join(_venv, "bin", "python")
+if os.path.exists(_py) and os.path.realpath(sys.prefix) != os.path.realpath(_venv):
+    _cmd = [_py, os.path.realpath(__file__), *sys.argv[1:]]
+    if os.name == "nt":
+        import subprocess
+        sys.exit(subprocess.call(_cmd))
+    os.execv(_py, _cmd)
+
+sys.path.insert(0, ROOT)
 for stream in (sys.stdout, sys.stderr):      # Windows consoles default to cp1252
     try:
         stream.reconfigure(encoding="utf-8", errors="replace")
     except Exception:
         pass
+
+try:
+    import rich, yaml  # noqa: F401
+except ImportError as e:
+    pip = r".venv\Scripts\pip" if os.name == "nt" else ".venv/bin/pip"
+    sys.exit(f"workloop: missing dependency ({e.name}). From {ROOT} run:\n"
+             f"  {'python' if os.name == 'nt' else 'python3'} -m venv .venv\n"
+             f"  {pip} install -r requirements.txt")
 
 args = sys.argv[1:]
 if not args:

@@ -11,18 +11,30 @@ A terminal menu for running several long-lived Claude Code sessions ("seats") pe
 
 Needs Python 3.8+ and the `claude` CLI on PATH.
 
+Install the two dependencies into a virtual environment inside the repo. workloop finds `.venv` on its own, so you never need to activate it:
+
 ```
-pip install -r requirements.txt
+python3 -m venv .venv
+.venv/bin/pip install -r requirements.txt
 ```
+
+On Windows:
+
+```
+python -m venv .venv
+.venv\Scripts\pip install -r requirements.txt
+```
+
+A plain `pip install -r requirements.txt` also works where the system Python allows it. Homebrew Python on macOS and recent Debian or Ubuntu refuse it with an `externally-managed-environment` error (PEP 668); the `.venv` route above avoids that.
 
 Then put `bin/` on PATH (Windows uses `bin/workloop.cmd`, macOS and Linux use `bin/workloop`) and run `workloop`. The first run asks for your name, which the agents use in their briefs.
 
 ### Setting up a new machine, step by step
 
-1. Check the prerequisites: `python --version` (3.8+), `git --version`, `claude --version` (installed and signed in).
+1. Check the prerequisites: `python3 --version` (3.8+; `python` on Windows), `git --version`, `claude --version` (installed and signed in).
 2. Get the code: `git clone <this repo's URL>`, or download the ZIP from the repo page if git should not be signed in on the machine.
-3. From the repo folder: `pip install -r requirements.txt`.
-4. Add the repo's `bin` folder to PATH. To try it without changing PATH, run `python bin/workloop` (Windows: `python bin\workloop`).
+3. From the repo folder, create `.venv` and install the dependencies into it (commands above).
+4. Add the repo's `bin` folder to PATH. To try it without changing PATH, run `python3 bin/workloop` (Windows: `python bin\workloop`). Any Python can start it; it switches to `.venv` by itself.
 5. Run `workloop` and give your name.
 6. Press `n` to create the first project: a name, a one-line goal and a home folder (the folder you work from; leave it blank for pure discussion or investigation work). Say yes to adding the first seat.
 
