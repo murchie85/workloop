@@ -42,6 +42,8 @@ To check the install without starting Claude, set `WORKLOOP_DRYRUN=1` first: wor
 
 ### Contributing changes back
 
+Pull requests must not contain personal information or any of your workloop data (projects, seats, handoffs, notes, transcripts). The full list is in [CONTRIBUTING.md](CONTRIBUTING.md).
+
 Before the first commit on a machine, set the git identity for this repo so no personal email lands in the history. GitHub lists your no-reply address under Settings → Emails ("Keep my email addresses private"):
 
 ```
