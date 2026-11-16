@@ -180,7 +180,9 @@ def hook(sid, event, note):
             p.set_session_meta(stage, last_note=note)
         if event == "PreCompact":
             p.set_session_meta(stage, limit=True)
-            p.log(stage, "context limit hit; handover available (h)")
+            p.log(stage, "context limit hit; compacting. Handover available (h)")
+        elif event == "Stop" and p.session_meta(stage).get("limit"):
+            p.set_session_meta(stage, limit=False, extended=True)
             cf.notify("workloop", f"{p.name} · {stage} session at context limit.")
         p.save()
         return
@@ -293,7 +295,7 @@ def run(p, stage, resume=False, extra=None, takeover=False):
     run_stage(p, stage, resume=resume, extra=extra, takeover=takeover)
     p.data = yaml.safe_load(cf.read(p.file)) or p.data
     if takeover:
-        p.set_session_meta(stage, limit=False)
+        p.set_session_meta(stage, limit=False, extended=False)
         p.save()
     if stage == "fast_plan":
         return      # fast_checkpoint() ingests and decides
@@ -418,7 +420,7 @@ def open_project(p):
     while True:
         p = Project(p.path)
         cur = p.stage
-        meta_lines = "".join(f"{st:<16} {'[red]LIMIT[/] ' if m.get('limit') else ''}[dim]{(m.get('last_note') or '')[:80]}[/]\n" for st, m in (p.data.get("session_meta") or {}).items())
+        meta_lines = "".join(f"{st:<16} {'[red]LIMIT[/] ' if m.get('limit') else ('[yellow]EXTENDED[/] ' if m.get('extended') else '')}[dim]{(m.get('last_note') or '')[:80]}[/]\n" for st, m in (p.data.get("session_meta") or {}).items())
         con.print()
         con.print(Panel(f"[bold]{p.name}[/]  [dim]{p.slug}[/]\nstage {stage_label(p)}   status [bold]{p.status}[/]   track {p.track}\n"
                         f"eval {score_label(p)}   idle {p.days_idle}d\n{meta_lines}"

@@ -188,6 +188,6 @@ def state_lines():
         la = store.project_last_active(p)
         age = (dt.datetime.now() - la).days if la else None
         seats = store.live_seats(p)
-        flag = "STALE" if age is not None and age >= cf.STALE_DAYS else ("LIMIT" if any(x.get("limit") for x in seats) else "")
+        flag = "STALE" if age is not None and age >= cf.STALE_DAYS else store.project_flag(p)
         out.append(f"{p['name']:<32} seats={len(seats)}  last={la.strftime('%d %b %H:%M') if la else '-':<13} {flag}")
     return out or ["no projects yet"]

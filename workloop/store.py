@@ -87,6 +87,22 @@ def live_seats(p):
     return [s for s in p.get("seats", []) if not s.get("retired")]
 
 
+def flag(seat):
+    """LIMIT: compacting right now. EXTENDED: carried on after one or more compactions,
+    so earlier detail may be lost; a handover to a fresh seat is worth considering."""
+    if seat.get("limit"):
+        return "LIMIT"
+    if seat.get("extended"):
+        n = int(seat.get("compactions") or 0)
+        return "EXTENDED" + (f" x{n}" if n > 1 else "")
+    return ""
+
+
+def project_flag(p):
+    flags = [flag(s) for s in live_seats(p)]
+    return "LIMIT" if "LIMIT" in flags else ("EXTENDED" if any(flags) else "")
+
+
 def open_projects(reg):
     return [p for p in reg["projects"] if p.get("status", "active") != "closed"]
 

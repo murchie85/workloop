@@ -49,13 +49,19 @@ Inside a project:
 |---|---|
 | `1-9` | resume a seat |
 | `a` | add a seat (label, start folder) |
-| `h` | context handover: retire a seat that hit its limit and start a replacement briefed with its last messages |
+| `h` | context handover: retire a seat and start a fresh replacement briefed with its last messages |
 | `r` | retire a seat |
 | `d` / `o` | read the digest / the handoff log |
 | `?` | helper for this project |
 | `e` | edit name, goal, folders, "read first", "do not touch" |
 | `f` | open the project's notes folder |
 | `x` | close the project |
+
+## Flags
+
+- **LIMIT**: the seat hit its context limit and is compacting right now.
+- **EXTENDED**: the seat carried on after compacting (`x3` = three times). It still works, but earlier detail may be lost, so consider a handover (`h`) to a fresh seat.
+- **stale**: no activity on the project for 5 days.
 
 ## What a seat is told
 

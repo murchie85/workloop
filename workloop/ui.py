@@ -32,6 +32,10 @@ def _short(path, n=38):
     return s if len(s) <= n else "…" + s[-(n - 1):]
 
 
+def _flag(f):
+    return f"[red]{f}[/]" if f == "LIMIT" else (f"[yellow]{f}[/]" if f else "")
+
+
 def ask_folder(label, default=""):
     """A folder that exists, or blank. Re-asks on a typo."""
     while True:
@@ -53,8 +57,8 @@ def projects_table(ps):
         live = store.live_seats(p)
         la = store.project_last_active(p)
         flags = []
-        if any(x.get("limit") for x in live):
-            flags.append("[red]LIMIT[/]")
+        if store.project_flag(p):
+            flags.append(_flag(store.project_flag(p)))
         if la and (dt.datetime.now() - la).days >= cf.STALE_DAYS:
             flags.append(f"[yellow]stale {(dt.datetime.now() - la).days}d[/]")
         t.add_row(str(i), p["name"], str(len(live)), _age(la), " ".join(flags), _short(p.get("home") or "(no folder)"), (p.get("goal") or "")[:50])
@@ -66,7 +70,7 @@ def seats_table(p):
     t.add_column("#", justify="right", style="dim"); t.add_column("seat", style="bold"); t.add_column("last"); t.add_column("flag"); t.add_column("last note", max_width=80)
     live = store.live_seats(p)
     for i, x in enumerate(live, 1):
-        t.add_row(str(i), x["label"], _age(store.seat_mtime(x)), "[red]LIMIT[/]" if x.get("limit") else "", (x.get("last_note") or "")[:80])
+        t.add_row(str(i), x["label"], _age(store.seat_mtime(x)), _flag(store.flag(x)), (x.get("last_note") or "")[:80])
     con.print(t)
     return live
 
@@ -163,7 +167,7 @@ def project_view(slug):
         elif c == "a":
             add_seat(slug)
         elif c in ("h", "r"):
-            n = Prompt.ask("context handover: which seat # is at its limit" if c == "h" else "retire which seat #", default="").strip()
+            n = Prompt.ask("context handover: replace which seat # with a fresh one" if c == "h" else "retire which seat #", default="").strip()
             if n.isdigit() and 1 <= int(n) <= len(live):
                 old = live[int(n) - 1]
                 if c == "h":

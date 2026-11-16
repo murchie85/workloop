@@ -8,7 +8,8 @@ from . import config as cf, store, transcripts as tr
 def hook(argv=None):
     """Reads the hook JSON on stdin.
     Stop        -> seat last_active / last_note; capture HANDOFF: blocks.
-    PreCompact  -> flag the seat as at its context limit, log it.
+                   A seat that replies after a compaction goes from LIMIT to EXTENDED.
+    PreCompact  -> flag the seat LIMIT (compacting now), count it, log it.
     SessionEnd  -> last_active + note.
     Sessions workloop does not know are ignored."""
     try:
@@ -33,12 +34,15 @@ def hook(argv=None):
                     store.append_handoff(p, seat["label"], text[text.index("HANDOFF:") + len("HANDOFF:"):].strip())
             if event == "PreCompact":
                 seat["limit"] = True
-                store.append_handoff(p, seat["label"], f"⚠ hit context limit. Last note: {seat.get('last_note') or '(none)'}\nContext handover: workloop → project → h.")
+                seat["compactions"] = int(seat.get("compactions") or 0) + 1
+                store.append_handoff(p, seat["label"], f"⚠ hit context limit (compaction {seat['compactions']}). Last note: {seat.get('last_note') or '(none)'}\nIt can carry on compacted, with some loss of earlier detail. Fresh seat instead: workloop → project → h.")
                 limit_hit = seat["label"]
+            elif event == "Stop" and seat.get("limit"):
+                seat["limit"], seat["extended"] = False, True      # it replied after compacting
             elif event == "SessionEnd":
                 store.append_handoff(p, seat["label"], f"session ended. Last note: {seat.get('last_note') or '(none)'}")
     if limit_hit:
-        cf.notify("workloop", f"{limit_hit} is at its context limit. Hand over.")
+        cf.notify("workloop", f"{limit_hit} hit its context limit and is compacting.")
     if not seat:
         from . import arch
         arch.hook(sid, event, flat)
@@ -149,7 +153,7 @@ def reg(argv):
     if a.cmd == "seats":
         p = _project(store.load(), a.project)
         for i, x in enumerate(p.get("seats", []), 1):
-            state = "retired" if x.get("retired") else ("LIMIT" if x.get("limit") else "live")
+            state = "retired" if x.get("retired") else (store.flag(x) or "live")
             print(f"{i:>2}  {x['label']:<36} {state:<8} last {x.get('last_active', '-')}  {(x.get('last_note') or '')[:60]}")
         return
 
